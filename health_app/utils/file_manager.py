@@ -1,62 +1,56 @@
+from abc import abstractmethod
 from pathlib import Path
 from typing import Any
 
 
 class FileManager:
     """
-    A base class for managing files
-    This class provides common file operations.
+    A class to manage file operations such as reading and writing files.
     """
 
-    def __init__(self, file_path: Path) -> None:
+    def __init__(self, *, file_path: Path) -> None:
         """
-        Initialize the FileManager class.
+        Initializes the FileManager with a file path.
 
         :param file_path: The path to the file to be managed.
         """
-        self.file_path = file_path
+        self._file_path = self.__set_file_path(file_path=file_path)
 
-    def read_file(self) -> str:
+    @abstractmethod
+    def read_file(self) -> list[dict]:
         """
-        Read the file and return its content as a string.
+        Abstract method to read the file.
 
-        :return: The content of the file as a string.
+        :return: The content of the file.
         """
-        with open(self.file_path, 'r') as file:
-            return file.read()
+        pass
 
+    @abstractmethod
     def write_file(self, *, content: Any) -> None:
         """
-        Write the provided content to the file.
+        Abstract method to write to the file.
 
-        :param content: The content to write to the file.
+        :param content: The content to be written to the file.
         """
-        with open(self.file_path, 'w') as file:
-            file.write(content)
+        pass
 
-    def append_to_file(self, *, content: Any) -> None:
+    @property
+    def file_path(self) -> Path:
         """
-        Append content to the file.
+        Property to get the file path.
 
-        :param content: The content to append to the file.
+        :return: The file path.
         """
-        with open(self.file_path, 'a') as file:
-            file.write(content)
+        return self._file_path
 
-    # file validations
-    def file_exists(self) -> bool:
+    @staticmethod
+    def __set_file_path(*, file_path: Path) -> Path:
         """
-        Check if the file exists.
+        Sets the file path.
 
-        :return: True if the file exists, False otherwise.
+        :param file_path: The path to the file to be managed.
+        :return: The file path.
         """
-        return self.file_path.exists()
-
-    def create_file(self) -> None:
-        """
-        Create the file if it doesn't already exist
-        Initialise the file with an empty string if it doesn't exist.
-        """
-        if not self.file_exists():
-            with open(self.file_path, 'w') as file:
-                file.write('')
+        if not file_path.exists():
+            file_path.touch()
+        return file_path

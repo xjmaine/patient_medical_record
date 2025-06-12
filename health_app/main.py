@@ -1,13 +1,28 @@
 from fastapi import FastAPI
+from fastapi.exceptions import HTTPException, RequestValidationError
 
-app = FastAPI()
+from health_app.exceptions.exception_handlers import http_exception_handler, validation_exception_handler
+from health_app.routers.api.v1.patient_router import patients_router
+
+# Initialize the FastAPI application
+app = FastAPI(debug=True, version="1.0.0")
+
+# Register the exception handlers
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
+app.add_exception_handler(HTTPException, http_exception_handler)
+
+# Register the routers
+app.include_router(patients_router)
 
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
+if __name__ == "__main__":
+    import uvicorn
 
-
-@app.get("/hello/{name}")
-async def say_hello(name: str):
-    return {"message": f"Hello {name}"}
+    uvicorn.run(
+        "health_app.main:app",
+        host="127.0.0.1",
+        port=8000,
+        log_level="info",
+        use_colors=True,
+        reload=True
+    )

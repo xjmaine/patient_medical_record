@@ -1,6 +1,8 @@
 from typing import Type
 
 from pydantic import BaseModel
+
+from health_app.exceptions.custom_exceptions import FileWriteError
 from health_app.utils.file_manager import FileManager
 
 class BaseRepository:
@@ -24,7 +26,7 @@ class BaseRepository:
         :return: created object
         """
         data_dict = data.model_dump()
-        model_instance = model(**data_dict
+        model_instance = model(**data_dict)
         self.__save(object_to_save=model_instance.model_dump())
 
     def __save(self, object_to_save: dict)->None:
@@ -40,7 +42,14 @@ class BaseRepository:
                 existing_data = self.__db_connection.read_file()
             if not isinstance(object_to_save, dict):
                 existing_data = [existing_data, object_to_save]
+            else:
+                existing_data=[]
                 # raise TypeError("object_to_save must be a dict")
+            
+            existing_data.append(object_to_save)
+            self.__db_connection.write_file(content=existing_data)
+        except Exception as e:
+            raise FileWriteError(str(self.__db_connection.file_path)) from e
 
     #update
 
